@@ -7,7 +7,8 @@ public class MinRewardDistribution {
     public static int minRewards(int[] ratings) {
         int n = ratings.length;
         int[] rewards = new int[n];
-        Arrays.fill(rewards, 1); // Every employee gets at least 1 reward
+        // Every employee gets at least 1 reward
+        Arrays.fill(rewards, 1);
 
         // Left-to-right pass
         for (int i = 1; i < n; i++) {
