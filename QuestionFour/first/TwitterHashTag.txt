@@ -10,4 +10,4 @@ Explanation:
 #HappyDay: Appeared in tweet IDs 13, 14, and 17, with a total count of 3 mentions.
 #TechLife: Appeared in tweet IDs 16 and 18, with a total count of 2 mentions.
 #WorkLife: Appeared in tweet ID 15, with a total count of 1 mention.
-Note: Output table is sorted in descending order by hashtag_count and hashtag respec
+Note: Output table is sorted in descending order by hashtag_count and hashtag respectively.
