@@ -7,12 +7,11 @@ public class MinRoadTravel {
     public static int minRoadsToCollectPackages(int[] packages, int[][] roads) {
         int n = packages.length;
 
-        // Build adjacency list representation of the graph
+        // Build adjacency list
         List<List<Integer>> graph = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             graph.add(new ArrayList<>());
         }
-
         for (int[] road : roads) {
             int a = road[0];
             int b = road[1];
@@ -20,9 +19,9 @@ public class MinRoadTravel {
             graph.get(b).add(a);
         }
 
-        // Find locations with packages
+        // Find all package locations
         List<Integer> packageLocations = new ArrayList<>();
-        for (int i = 0; i < packages.length; i++) {
+        for (int i = 0; i < n; i++) {
             if (packages[i] == 1) {
                 packageLocations.add(i);
             }
@@ -32,69 +31,48 @@ public class MinRoadTravel {
             return 0; // No packages to collect
         }
 
-        // Compute distances between all nodes (Floyd-Warshall)
+        // Precompute shortest distances from each node to all other nodes using BFS
         int[][] dist = new int[n][n];
         for (int i = 0; i < n; i++) {
-            Arrays.fill(dist[i], Integer.MAX_VALUE / 2); // Use MAX_VALUE/2 to prevent overflow
+            Arrays.fill(dist[i], Integer.MAX_VALUE);
             dist[i][i] = 0;
-        }
-
-        for (int u = 0; u < n; u++) {
-            for (int v : graph.get(u)) {
-                dist[u][v] = 1;
-            }
-        }
-
-        for (int k = 0; k < n; k++) {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                    if (dist[i][k] + dist[k][j] < dist[i][j]) {
-                        dist[i][j] = dist[i][k] + dist[k][j];
+            Queue<Integer> queue = new LinkedList<>();
+            queue.add(i);
+            while (!queue.isEmpty()) {
+                int u = queue.poll();
+                for (int v : graph.get(u)) {
+                    if (dist[i][v] == Integer.MAX_VALUE) {
+                        dist[i][v] = dist[i][u] + 1;
+                        queue.add(v);
                     }
                 }
             }
         }
 
-        // For each location, determine which package locations are within distance 2
-        List<Set<Integer>> canCollect = new ArrayList<>();
-        for (int loc = 0; loc < n; loc++) {
-            Set<Integer> collectable = new HashSet<>();
-            for (int pkgLoc : packageLocations) {
-                if (dist[loc][pkgLoc] <= 2) {
-                    collectable.add(pkgLoc);
-                }
-            }
-            canCollect.add(collectable);
-        }
-
-        // Use BFS to find minimum roads traversed
+        // Use BFS to find the minimum roads to collect all packages
         int minRoads = Integer.MAX_VALUE;
 
         for (int start = 0; start < n; start++) {
             Queue<State> queue = new LinkedList<>();
             Set<String> visited = new HashSet<>();
 
-            // Initial state: current location, collected packages, roads traversed
-            Set<Integer> initialCollected = new HashSet<>(canCollect.get(start));
-            queue.add(new State(start, initialCollected, 0));
+            // Initial state: start location, no packages collected, 0 roads traversed
+            queue.add(new State(start, 0, 0));
 
             while (!queue.isEmpty()) {
                 State current = queue.poll();
                 int loc = current.location;
-                Set<Integer> collected = current.collected;
-                int currentRoads = current.roads;
+                int collectedMask = current.collectedMask;
+                int roadsTraversed = current.roadsTraversed;
 
-                // If all packages collected, find path back to start
-                if (collected.size() == packageLocations.size()) {
-                    int returnDistance = dist[loc][start];
-                    if (returnDistance < Integer.MAX_VALUE / 2) {
-                        minRoads = Math.min(minRoads, currentRoads + returnDistance);
-                    }
+                // If all packages collected, update minRoads
+                if (collectedMask == (1 << packageLocations.size()) - 1) {
+                    minRoads = Math.min(minRoads, roadsTraversed);
                     continue;
                 }
 
                 // Generate unique state key
-                String stateKey = loc + ":" + collected.hashCode();
+                String stateKey = loc + ":" + collectedMask;
                 if (visited.contains(stateKey)) {
                     continue;
                 }
@@ -102,9 +80,13 @@ public class MinRoadTravel {
 
                 // Try moving to adjacent locations
                 for (int nextLoc : graph.get(loc)) {
-                    Set<Integer> newCollected = new HashSet<>(collected);
-                    newCollected.addAll(canCollect.get(nextLoc));
-                    queue.add(new State(nextLoc, newCollected, currentRoads + 1));
+                    int newCollectedMask = collectedMask;
+                    for (int i = 0; i < packageLocations.size(); i++) {
+                        if (packageLocations.get(i) == nextLoc) {
+                            newCollectedMask |= (1 << i); // Mark package as collected
+                        }
+                    }
+                    queue.add(new State(nextLoc, newCollectedMask, roadsTraversed + 1));
                 }
             }
         }
@@ -114,27 +96,26 @@ public class MinRoadTravel {
 
     // Helper class to represent state in BFS
     static class State {
-
         int location;
-        Set<Integer> collected;
-        int roads;
+        int collectedMask; // Bitmask to represent collected packages
+        int roadsTraversed; // Number of roads traversed so far
 
-        State(int location, Set<Integer> collected, int roads) {
+        State(int location, int collectedMask, int roadsTraversed) {
             this.location = location;
-            this.collected = collected;
-            this.roads = roads;
+            this.collectedMask = collectedMask;
+            this.roadsTraversed = roadsTraversed;
         }
     }
 
     public static void main(String[] args) {
         // Test case 1
-        int[] packages1 = {1, 0, 0, 0, 0, 1};
-        int[][] roads1 = {{0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}};
+        int[] packages1 = { 1, 0, 0, 0, 0, 1 };
+        int[][] roads1 = { { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 4 }, { 4, 5 } };
         System.out.println(minRoadsToCollectPackages(packages1, roads1)); // Should output 2
 
         // Test case 2
-        int[] packages2 = {0, 0, 0, 1, 1, 0, 0, 1};
-        int[][] roads2 = {{0, 1}, {0, 2}, {1, 3}, {1, 4}, {2, 5}, {5, 6}, {5, 7}};
+        int[] packages2 = { 0, 0, 0, 1, 1, 0, 0, 1 };
+        int[][] roads2 = { { 0, 1 }, { 0, 2 }, { 1, 3 }, { 1, 4 }, { 2, 5 }, { 5, 6 }, { 5, 7 } };
         System.out.println(minRoadsToCollectPackages(packages2, roads2)); // Should output 2
     }
 }
