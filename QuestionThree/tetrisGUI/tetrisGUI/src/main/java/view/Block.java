@@ -1,4 +1,4 @@
-package QuestionThree.tetrisGUI.tetrisGUI.src.main.java.view;
+package view;
 
 import java.awt.Color;
 

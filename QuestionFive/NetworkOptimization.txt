@@ -20,6 +20,7 @@ of connections that minimizes the total cost while ensuring all nodes are connec
 o Include a feature where the user can calculate the shortest path between any pair of nodes
 within the selected network topology. The GUI should display these paths, taking into
 account the bandwidths as weights.
+
 4. Real-time Evaluation:
 o Provide real-time analysis within the GUI that displays the total cost and latency of the
 current network topology. If the user is not satisfied with the results, they should be able
