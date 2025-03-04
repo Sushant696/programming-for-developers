@@ -14,14 +14,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * A multi-threaded web crawler that explores URLs starting from a given seed
- * URL.
- * Features include domain filtering, maximum page limits, and concurrent
- * processing.
- */
-
 public class WebCrawler {
+
     // Thread-safe queue for managing URLs to be crawled
     private final Queue<String> urlQueue = new ConcurrentLinkedQueue<>();
     // Track visited URLs to prevent duplicate processing
@@ -36,13 +30,6 @@ public class WebCrawler {
     // Flag to coordinate graceful shutdown across threads
     private volatile boolean isDone = false;
 
-    /**
-     * Initialize web crawler with specified parameters
-     * 
-     * @param numThreads   Number of concurrent worker threads
-     * @param maxPages     Maximum number of pages to crawl
-     * @param domainFilter Domain to restrict crawling to (null for no restriction)
-     */
     public WebCrawler(int numThreads, int maxPages, String domainFilter) {
         this.executorService = Executors.newFixedThreadPool(numThreads);
         this.numThreads = numThreads;
@@ -52,8 +39,6 @@ public class WebCrawler {
 
     /**
      * Starts the crawling process from the initial URL
-     * 
-     * @param startUrl URL to begin crawling from
      */
     public void startCrawling(String startUrl) {
         urlQueue.add(startUrl);
@@ -72,8 +57,8 @@ public class WebCrawler {
     }
 
     /**
-     * Worker thread method for processing URLs from the queue
-     * Implements empty queue detection with polling and timeout
+     * Worker thread method for processing URLs from the queue Implements empty
+     * queue detection with polling and timeout
      */
     private void crawlPages() {
         int emptyPolls = 0;
@@ -102,8 +87,9 @@ public class WebCrawler {
 
             // Synchronize access to shared visited URLs set
             synchronized (visitedUrls) {
-                if (visitedUrls.contains(url))
+                if (visitedUrls.contains(url)) {
                     continue;
+                }
                 visitedUrls.add(url);
                 // Check if reached page limit
                 if (visitedUrls.size() >= maxPages) {
@@ -129,12 +115,6 @@ public class WebCrawler {
         }
     }
 
-    /**
-     * Determines if a URL should be crawled based on domain filter
-     * 
-     * @param url URL to check
-     * @return true if URL should be crawled
-     */
     private boolean shouldCrawl(String url) {
         // Skip domain check if no filter specified
         return domainFilter == null || url.contains(domainFilter);
@@ -142,9 +122,6 @@ public class WebCrawler {
 
     /**
      * Fetches page content from a URL
-     * 
-     * @param urlString URL to fetch
-     * @return HTML content as string
      */
     private String fetchPage(String urlString) throws IOException {
         URL url = new URL(urlString);
@@ -163,9 +140,6 @@ public class WebCrawler {
 
     /**
      * Processes page content to extract metadata
-     * 
-     * @param url     URL of the page
-     * @param content HTML content of the page
      */
     private void processContent(String url, String content) {
         // Simple title extraction demonstration
@@ -177,12 +151,9 @@ public class WebCrawler {
     }
 
     /**
-     * Extracts URLs from HTML content using regex pattern
-     * Note: Simple implementation - real-world use would require more robust
-     * parsing
-     * 
-     * @param content HTML content to parse
-     * @return Set of found URLs
+     * Extracts URLs from HTML content using regex pattern Note: Simple
+     * implementation - real-world use would require more robust parsing
+     *
      */
     private Set<String> extractUrls(String content) {
         Set<String> foundUrls = new HashSet<>();
@@ -201,14 +172,14 @@ public class WebCrawler {
     }
 
     /**
-     * Test method to crawl multiple sites concurrently
-     * Demonstrates parallel crawling of different domains
+     * Test method to crawl multiple sites concurrently Demonstrates parallel
+     * crawling of different domains
      */
     private static void testMultipleSites() {
         String[][] sites = {
-                { "https://twbcreates.com", "twbcreates.com" },
-                { "https://example.com", "example.com" },
-                { "https://wikipedia.org", "wikipedia.org" }
+            {"https://twbcreates.com", "twbcreates.com"},
+            {"https://example.com", "example.com"},
+            {"https://wikipedia.org", "wikipedia.org"}
         };
 
         // Create separate thread pool for site crawling tasks
@@ -226,9 +197,7 @@ public class WebCrawler {
 
     /**
      * Helper method for testing individual site crawling
-     * 
-     * @param url    Starting URL
-     * @param domain Domain filter for crawling
+     *
      */
     private static void testSite(String url, String domain) {
         System.out.println("\n===== CRAWLING " + domain + " =====");
