@@ -1,6 +1,7 @@
 package QuestionThree.first;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 class MinConnectionCost {
 
